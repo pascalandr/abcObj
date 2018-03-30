@@ -1,5 +1,5 @@
 #include "animatePorcess.h"
-#include <iostream>
+#include "global.h"
 #include <fstream>
 #include <iomanip>
 #include <Alembic/AbcGeom/All.h>
@@ -15,9 +15,9 @@ void GetRelevantSampleTimes(TimeSamplingPtr timeSampling,
 		output.insert(0.0);
 		return;
 	}
-	chrono_t frameTime=30.0/24.0;//相当于这一帧所在的时间
-	chrono_t shutterOpenTime=(30.0+0.0)/24.0;
-	chrono_t shutterCloseTime=(30.0+0.5)/24.0;
+	chrono_t frameTime=frame/24.0;//相当于这一帧所在的时间
+	chrono_t shutterOpenTime=(frame+0.0)/24.0;
+	chrono_t shutterCloseTime=(frame+0.5)/24.0;
 	std::pair<index_t,chrono_t> shutterOpenFloor=timeSampling->getFloorIndex(shutterOpenTime,numSamples);//取下整
 	std::pair<index_t,chrono_t> shutterCloseCeil=timeSampling->getCeilIndex(shutterCloseTime,numSamples);//取上整
 
@@ -121,7 +121,6 @@ void setUVs(double iFrame,Alembic::AbcGeom::IV2fGeomParam iUVs,string filename)
             outfile<<"vt "<<fixed<<(*uvPtr)[i].x<<" ";
             outfile<<"vt "<<fixed<<(*uvPtr)[i].y<<endl;
      }
-
 }
 
 void setPolyNormals(double iFrame,Alembic::AbcGeom::IN3fGeomParam iNormals,string filename)
@@ -143,7 +142,6 @@ void setPolyNormals(double iFrame,Alembic::AbcGeom::IN3fGeomParam iNormals,strin
         }
 
 
-
 	Alembic::AbcCoreAbstract::index_t index,ceilIndex;
 	 double alpha = getWeightAndIndex(iFrame,
             iNormals.getTimeSampling(), iNormals.getNumSamples(),
@@ -152,6 +150,7 @@ void setPolyNormals(double iFrame,Alembic::AbcGeom::IN3fGeomParam iNormals,strin
 	 iNormals.getExpanded(samp,Alembic::Abc::ISampleSelector(index));
 
 	 Alembic::Abc::N3fArraySamplePtr sampVal = samp.getVals();
+
      size_t sampSize = sampVal->size();
 	 cout<<"normalNum:"<<sampSize<<endl;
 
@@ -184,12 +183,14 @@ void setPolyNormals(double iFrame,Alembic::AbcGeom::IN3fGeomParam iNormals,strin
                    outfile<<"vn "<<fixed<<(*sampVal)[i].x<<" "<<(*sampVal)[i].y<<" "<<(*sampVal)[i].z<<endl;
                 }
 	 }
-
-
+	
 }
 
 
 void fillTopology(
+	    double iFrame,
+		Alembic::AbcGeom::IV2fGeomParam iUVs,
+		Alembic::AbcGeom::IN3fGeomParam iNormals,
         Alembic::Abc::Int32ArraySamplePtr iIndices,
         Alembic::Abc::Int32ArraySamplePtr iCounts,string filename)
 {
@@ -197,6 +198,7 @@ void fillTopology(
 	outfile.open(filename,ios::app);
 	unsigned int numPolys=static_cast<unsigned int>(iCounts->size());
 	int *polyCounts=new int[numPolys];
+
 	for(unsigned int i=0;i<numPolys;i++)
 	{
 		polyCounts[i]=(*iCounts)[i];//每一行都是4个点的信息
@@ -209,17 +211,87 @@ void fillTopology(
 
 	unsigned int facePointIndex=0;
 	unsigned int base=0;
+	Alembic::Abc::UInt32ArraySamplePtr indexPtr;
+	if(iUVs)
+	{
+		//尝试输出uv索引
+		Alembic::AbcCoreAbstract::index_t index,ceilIndex;
+		getWeightAndIndex(iFrame,iUVs.getTimeSampling(),iUVs.getNumSamples(),index,ceilIndex);
+		Alembic::AbcGeom::IV2fGeomParam::Sample samp;
+		iUVs.getIndexed(samp, Alembic::Abc::ISampleSelector(index));
+		Alembic::AbcGeom::V2fArraySamplePtr uvPtr = samp.getVals();
+		indexPtr = samp.getIndices();
+	}
+	
+	Alembic::Abc::UInt32ArraySamplePtr norPtr;
+	if(iNormals)
+	{
+	//尝试输出法向索引
+		  Alembic::AbcCoreAbstract::index_t indexnor,ceilIndexnor;
+		  double alpha = getWeightAndIndex(iFrame,
+				iNormals.getTimeSampling(), iNormals.getNumSamples(),
+				indexnor, ceilIndexnor);
+		  if(alpha!=0)
+			  cout<<"继续执行该程序"<<endl;
+		 Alembic::AbcGeom::IN3fGeomParam::Sample sampnor;
+		 iNormals.getIndexed(sampnor,Alembic::Abc::ISampleSelector(indexnor));
+
+		 Alembic::Abc::N3fArraySamplePtr sampVal = sampnor.getVals();
+		 norPtr=sampnor.getIndices();
+	}
+
+
+	int uvIndex=0;
+	int normalIndex=0;
 
 	for(unsigned int i=0;i<numPolys;i++)
 	{
-		int curNum=polyCounts[i];//每一行各个元素出现的次数，一般为4
+		int curNum=polyCounts[i];
 		outfile<<"f"<<" ";
-		for (int j = 0; j < curNum; ++j, ++facePointIndex)
+
+		if(curNum==0)
+			continue;
+
+		int normal=normalIndex+curNum-1;
+
+		int startpoint=uvIndex + curNum - 1;
+		int nor=curNum-1;
+		for (int j = 0; j < curNum; ++j)
 		{
                 //polyConnects[facePointIndex] = (*iIndices)[base+curNum-j-1];
-				outfile<<(*iIndices)[base+curNum-j-1]+1<<"/";//点的索引
+				outfile<<(*iIndices)[base+curNum-j-1]+1;//点的索引
+				//有uv无法向
+				if(iUVs && !iNormals)
+				{
+					outfile<<"/";
+					outfile<<(*indexPtr)[startpoint-j]+1<<" ";
+				}
+				//有法向无uv
+				if(!iUVs && iNormals)
+				{
+					outfile<<"//"<<(*norPtr)[startpoint-j]+1<<" ";
+				}
+				//有uv有法向
+				if(iUVs && iNormals)
+				{
+					outfile<<"/"<<(*indexPtr)[startpoint-j]+1;
+					//outfile<<"/"<<(*norPtr)[normal-nor]+1<<" ";
+					outfile<<"/"<<(*norPtr)[startpoint-j]+1<<" ";
+
+				}
+				//无法向无uv
+				if(!iUVs && !iNormals)
+				{
+					outfile<<" ";
+				}
+				uvIndex++;
+				nor--;
+				normalIndex++;
+				
 		}
-		//outfile<<endl;
+		outfile<<endl;
         base += curNum;
 	}
+
+
 }

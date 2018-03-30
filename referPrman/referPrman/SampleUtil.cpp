@@ -1,12 +1,13 @@
 #include "SampleUtil.h"
 #include "animatePorcess.h"
+#include "global.h"
 
 void WriteMotionBegin(const SampleTimeSet &sampleTimes )
 {
     std::vector<float> outputTimes;
     outputTimes.reserve( sampleTimes.size() );
 
-    chrono_t frameTime = 30.0 / 24.0;
+    chrono_t frameTime = frame / 24.0;
 
     for ( SampleTimeSet::const_iterator iter = sampleTimes.begin();
           iter != sampleTimes.end() ; ++iter )

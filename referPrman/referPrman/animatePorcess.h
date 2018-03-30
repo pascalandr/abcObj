@@ -24,6 +24,8 @@ void setUVs(double iFrame,Alembic::AbcGeom::IV2fGeomParam iUVs,string filename);
 void setPolyNormals(double iFrame, Alembic::AbcGeom::IN3fGeomParam iNormals,string filename);
 
  void fillTopology(
+	    double iFrame,Alembic::AbcGeom::IV2fGeomParam iUVs,
+		Alembic::AbcGeom::IN3fGeomParam iNormals,
         Alembic::Abc::Int32ArraySamplePtr iIndices,
         Alembic::Abc::Int32ArraySamplePtr iCounts,string filename);
  

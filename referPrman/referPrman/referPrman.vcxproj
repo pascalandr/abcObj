@@ -136,7 +136,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\MayaInstall\Maya2016\devkit\Alembic\include;E:\MayaInstall\Maya2016\devkit\Alembic\include\AlembicPrivate\ilmbase;E:\MayaInstall\tryCompile\boost_1_44_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>G:\mayaInstall\boost_1_44_0;G:\mayaInstall\naya2016yuan\Maya2016\Maya2016\devkit\Alembic\include\AlembicPrivate\ilmbase;G:\mayaInstall\naya2016yuan\Maya2016\Maya2016\devkit\Alembic\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,16 +144,18 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>AlembicAbcCoreFactory.lib;AlembicAbcCoreHDF5.lib;AlembicAbcCoreOgawa.lib;AlembicAbcGeom.lib;AlembicAbc.lib;AlembicAbcCoreAbstract.lib;AlembicAbcMaterial.lib;AlembicAbcCollection.lib;AlembicOgawa.lib;AlembicUtil.lib;hdf5_hl.lib;hdf5.lib;AlembicIex.lib;AlembicHalf.lib;AlembicImath.lib;libzlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>E:\MayaInstall\Maya2016\devkit\Alembic\lib;E:\MayaInstall\Maya2016\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>G:\mayaInstall\naya2016yuan\Maya2016\Maya2016\lib;G:\mayaInstall\naya2016yuan\Maya2016\Maya2016\devkit\Alembic\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="animateProcess.cpp" />
+    <ClCompile Include="global.cpp" />
     <ClCompile Include="ProcMain.cpp" />
     <ClCompile Include="SampleUtil.cpp" />
     <ClCompile Include="traverse.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="global.h" />
     <ClInclude Include="SampleUtil.h" />
     <ClInclude Include="traverse.h" />
     <ClInclude Include="animatePorcess.h" />

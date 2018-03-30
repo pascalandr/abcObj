@@ -1,5 +1,5 @@
 #include "traverse.h"
-#include <iostream>
+#include "global.h"
 #include <fstream>
 using namespace std;
 #include <streambuf>
@@ -29,7 +29,6 @@ void walk(Alembic::Abc::IArchive & iRoot)
 		cout<<"topObject为空"<<endl;
 
 	size_t numChildren=topObject->getNumChildren();
-	//cout<<"numChildren的数量是："<<numChildren<<endl;
 	if(numChildren==0)
 	{
 		cout<<"numChildren为空"<<endl;
@@ -45,12 +44,12 @@ void walk(Alembic::Abc::IArchive & iRoot)
 //手动编写参数
 void subdivide()
 {
+
 	std::string workString;
-	std::string filePath;
 	try
 	{
 	Alembic::AbcCoreFactory::IFactory factory;
-	IArchive archive=factory.getArchive("C:/Users/KCM/Desktop/transobj/test/cube/cube.abc");
+	IArchive archive=factory.getArchive(filePath);
 	walk(archive);
 
 	}//try结束的地方
@@ -66,6 +65,7 @@ void subdivide()
 void main()
 {
 	subdivide();
+
 	system("pause");
 	return ;
 }

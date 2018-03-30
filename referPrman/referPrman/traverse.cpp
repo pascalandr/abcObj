@@ -1,11 +1,12 @@
 #include <stdio.h>
-#include <iostream>
+#include "global.h"
 #include <fstream>
 #include <iomanip>
 #include "animatePorcess.h"
 #include "SampleUtil.h"
 using namespace std;
 
+//预加载缓存文档
 AlembicObjectPtr previsit(AlembicObjectPtr iParentObject)
 {
 	Alembic::Abc::IObject parent=iParentObject->object();
@@ -195,7 +196,7 @@ void visit(AlembicObjectPtr iObject)
 			P3fArraySamplePtr point=sample.getPositions();
 			//打开文件的操作
 			ofstream outfile;
-			outfile.open("transcube.obj");
+			outfile.open(objPath);
 
 			//先进行强制类型转换，然后再获取输出内容
 			float32_t *fpoint=(float32_t *)(point->getData());
@@ -215,21 +216,22 @@ void visit(AlembicObjectPtr iObject)
 			outfile<<endl;
 
 
-			//尝试获得uv信息
+			////尝试获得uv信息
 			IV2fGeomParam uvParam = ps.getUVsParam();
-			setUVs(30,uvParam,"transcube.obj");
+			setUVs(frame,uvParam,objPath);
+			outfile.close();
 
 			//尝试获得法向信息
 			IN3fGeomParam nParam = ps.getNormalsParam();
-			setPolyNormals(30,nParam,"transcube.obj");
+			setPolyNormals(frame,nParam,objPath);
 			outfile.close();
 			cout<<*(sample.getFaceCounts()->get())<<endl;
 
 			//尝试获得面的索引信息
-			fillTopology(sample.getFaceIndices(),sample.getFaceCounts(),"transcube.obj");
+			fillTopology(frame,uvParam,nParam,sample.getFaceIndices(),sample.getFaceCounts(),objPath);
 
 			//尝试获得法向的索引信息
-
+			
 	
 	
 
